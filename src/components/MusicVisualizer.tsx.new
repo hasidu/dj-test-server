@@ -1,0 +1,356 @@
+"use client";
+
+import { useEffect, useRef, useState } from 'react';
+
+interface MusicVisualizerProps {
+  audioElement: HTMLAudioElement | null;
+  isPlaying: boolean;
+  colorScheme?: 'green' | 'rainbow' | 'neon' | 'monochrome';
+  sensitivity?: number;
+  interactive?: boolean;
+  visualizerType?: 'standard' | 'mirrored';
+}
+
+const MusicVisualizer: React.FC<MusicVisualizerProps> = ({ 
+  audioElement, 
+  isPlaying, 
+  colorScheme = 'green',
+  sensitivity = 1.0,
+  interactive = false,
+  visualizerType = 'mirrored'  // Default to mirrored as shown in the image
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const isConnectedRef = useRef(false);
+  
+  // Initialize the audio analyzer
+  useEffect(() => {
+    if (!audioElement) return;
+    
+    // Create audio context and analyzer only once
+    if (!audioContext) {
+      try {
+        const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const analyzerNode = context.createAnalyser();
+        
+        // Set FFT size - smaller for better performance and more responsive visualization
+        analyzerNode.fftSize = 512; // Better balance between performance and detail
+        analyzerNode.smoothingTimeConstant = 0.65; // Slightly less smoothing for more responsiveness
+        
+        setAudioContext(context);
+        setAnalyser(analyzerNode);
+        
+        // Create data array for visualization
+        const bufferLength = analyzerNode.frequencyBinCount;
+        dataArrayRef.current = new Uint8Array(bufferLength);
+      } catch (error) {
+        console.error("Error initializing audio context:", error);
+      }
+    }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    };
+  }, [audioElement, audioContext]);
+
+  // Connect the audio element to the analyzer when ready
+  useEffect(() => {
+    if (!audioElement || !audioContext || !analyser) return;
+    
+    // Only connect once to avoid "already connected" errors
+    if (!isConnectedRef.current) {
+      try {
+        const source = audioContext.createMediaElementSource(audioElement);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        isConnectedRef.current = true;
+      } catch (e) {
+        // If we get an error here, it's likely because the audio element is already connected
+        console.log('Audio source already connected or error:', e);
+        isConnectedRef.current = true; // Still mark as connected to avoid retry
+      }
+    }
+    
+    // Resume audio context if it's suspended (browser autoplay policy)
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(err => console.error("Error resuming audio context:", err));
+    }
+  }, [audioElement, audioContext, analyser]);
+  
+  // Update canvas dimensions on resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (canvasRef.current) {
+        const { width, height } = canvasRef.current.getBoundingClientRect();
+        setDimensions({ width, height });
+      }
+    };
+    
+    // Set initial dimensions
+    updateDimensions();
+    
+    // Add resize listener
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+  
+  // Mouse position tracking for interactive mode
+  const [mousePosition, setMousePosition] = useState<{x: number, y: number} | null>(null);
+  
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setMousePosition({ x, y });
+  };
+  
+  const handleMouseLeave = () => {
+    setMousePosition(null);
+  };
+  
+  // Improved bar visualizer drawing function
+  const drawBars = (
+    ctx: CanvasRenderingContext2D, 
+    canvas: HTMLCanvasElement, 
+    dataArray: Uint8Array, 
+    bufferLength: number
+  ) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Animation timestamp to create subtle movement even when audio is quiet
+    const timestamp = Date.now() / 1000;
+    
+    // For better visualization, distribute bars more evenly across the frequency spectrum
+    const numBars = visualizerType === 'mirrored' ? 32 : 40; // Fewer bars for mirrored for better performance
+    const barsPerSide = visualizerType === 'mirrored' ? numBars / 2 : numBars;
+    
+    // Better frequency distribution - balance between linear and logarithmic
+    // This ensures we cover more of the spectrum evenly
+    const barIndexes = Array(barsPerSide).fill(0).map((_, i) => {
+      // Use a mix of linear and logarithmic scales for better distribution
+      const percent = i / barsPerSide;
+      // Use a less aggressive curve (1.3 instead of 1.5) to include more mid-range frequencies
+      const logIndex = Math.floor(Math.pow(percent, 1.3) * bufferLength);
+      return Math.min(logIndex, bufferLength - 1);
+    });
+    
+    // Calculate bar width based on canvas size and visualization type
+    const barWidth = visualizerType === 'mirrored' 
+      ? canvas.width / numBars 
+      : canvas.width / numBars;
+    const barSpacing = Math.max(1, barWidth * 0.15); // Slightly reduced spacing
+    
+    // For mirrored visualization, calculate center point
+    const centerX = canvas.width / 2;
+
+    // Prepare gradients based on color scheme
+    let gradient: CanvasGradient | null = null;
+    
+    if (colorScheme === 'green') {
+      gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+      gradient.addColorStop(0, '#1DB954'); // Spotify green
+      gradient.addColorStop(0.6, '#18a34a');
+      gradient.addColorStop(1, 'rgba(29, 185, 84, 0.3)');
+    } else if (colorScheme === 'monochrome') {
+      gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+      gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.4)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+    } else if (colorScheme === 'rainbow') {
+      gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+      gradient.addColorStop(0, '#ff0000');
+      gradient.addColorStop(0.2, '#ffff00');
+      gradient.addColorStop(0.4, '#00ff00');
+      gradient.addColorStop(0.6, '#00ffff');
+      gradient.addColorStop(0.8, '#0000ff');
+      gradient.addColorStop(1, '#ff00ff');
+    } else if (colorScheme === 'neon') {
+      gradient = ctx.createLinearGradient(0, canvas.height, 0, 0);
+      gradient.addColorStop(0, '#ff00ff');
+      gradient.addColorStop(0.5, '#00ffff');
+      gradient.addColorStop(1, '#ff00ff');
+    }
+
+    if (visualizerType === 'mirrored') {
+      // Draw mirrored bars from center outward (like in the screenshot)
+      for (let i = 0; i < barsPerSide; i++) {
+        // Get frequency data from the calculated index
+        const dataIndex = barIndexes[i];
+        const value = dataArray[dataIndex];
+        
+        // Calculate positions for left and right bars - ensure they meet in the center
+        const leftX = centerX - ((i + 1) * barWidth);
+        const rightX = centerX + (i * barWidth);
+        
+        // Apply animation and normalization to both sides
+        const primaryWave = Math.sin(timestamp * 2.5 + i * 0.2) * 0.04;
+        const secondaryWave = Math.cos(timestamp * 1.7 + i * 0.3) * 0.03;
+        const animationFactor = primaryWave + secondaryWave + 0.05;
+        
+        // Apply sensitivity multiplier and add minimal height
+        const minHeight = canvas.height * 0.08; // Minimum height for visibility
+        // Add more weight to the animation factor for quiet frequencies
+        const valueWeight = value / 255;
+        const animationWeight = 1 - Math.min(0.7, valueWeight);
+        
+        // Normalized value with weighted animation
+        const normalizedValue = valueWeight + (animationFactor * animationWeight);
+        const barHeight = (normalizedValue * canvas.height * sensitivity * 0.8) + minHeight;
+        
+        // Set fill style
+        if (gradient) {
+          ctx.fillStyle = gradient;
+        } else {
+          ctx.fillStyle = '#1DB954';
+        }
+        
+        // Draw left bar (mirrored)
+        const leftBarWidth = barWidth - barSpacing;
+        ctx.fillRect(leftX, canvas.height - barHeight, leftBarWidth, barHeight);
+        
+        // Draw right bar
+        const rightBarWidth = barWidth - barSpacing;
+        ctx.fillRect(rightX, canvas.height - barHeight, rightBarWidth, barHeight);
+      }
+    } else {
+      // Standard visualization - draw bars across the full width
+      for (let i = 0; i < numBars; i++) {
+        // Get frequency data from the calculated index
+        const dataIndex = i < barIndexes.length ? barIndexes[i] : barIndexes[i % barIndexes.length];
+        
+        // Calculate x position - simply space bars evenly across the canvas
+        const x = i * barWidth;
+        
+        // Get the raw value and normalize it
+        const value = dataArray[dataIndex];
+        
+        // Enhanced animation factor - stronger to ensure all bars show movement
+        // Varies based on bar position for a more natural wave-like movement
+        // Using a combination of sine waves for more organic motion
+        const primaryWave = Math.sin(timestamp * 2.5 + i * 0.2) * 0.04;
+        const secondaryWave = Math.cos(timestamp * 1.7 + i * 0.3) * 0.03;
+        const animationFactor = primaryWave + secondaryWave + 0.05; // Baseline of 0.05 ensures all bars move
+        
+        // Apply sensitivity multiplier and add minimal height
+        const minHeight = canvas.height * 0.08; // Increased minimum height for visibility
+        // Add more weight to the animation factor for quiet frequencies
+        const valueWeight = value / 255;
+        const animationWeight = 1 - Math.min(0.7, valueWeight); // More animation for quieter frequencies
+        
+        // Normalized value with weighted animation to ensure all bars move
+        const normalizedValue = valueWeight + (animationFactor * animationWeight);
+        const barHeight = (normalizedValue * canvas.height * sensitivity * 0.8) + minHeight;
+        
+        // Set fill style
+        if (gradient) {
+          ctx.fillStyle = gradient;
+        } else {
+          // Fallback color
+          ctx.fillStyle = '#1DB954';
+        }
+        
+        // Handle interactive visualizer
+        if (interactive && mousePosition) {
+          const distanceToMouse = Math.abs(x + barWidth/2 - mousePosition.x);
+          const maxDistance = canvas.width / 5;
+          
+          if (distanceToMouse < maxDistance) {
+            const boostFactor = 1 + (1 - distanceToMouse / maxDistance);
+            const boostedHeight = Math.min(canvas.height, barHeight * boostFactor);
+            ctx.fillRect(x, canvas.height - boostedHeight, barWidth - barSpacing, boostedHeight);
+          } else {
+            ctx.fillRect(x, canvas.height - barHeight, barWidth - barSpacing, barHeight);
+          }
+        } else {
+          // Standard bar drawing with rounded corners
+          const barX = x;
+          const barY = canvas.height - barHeight;
+          const barW = barWidth - barSpacing;
+          const barH = barHeight;
+          
+          ctx.fillRect(barX, barY, barW, barH);
+        }
+      }
+    }
+  };
+  
+  // Animation frame drawing function
+  const draw = () => {
+    if (!analyser || !canvasRef.current || !dataArrayRef.current) {
+      animationRef.current = requestAnimationFrame(draw);
+      return;
+    }
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Get canvas dimensions from the actual rendered size
+    const { width, height } = canvas.getBoundingClientRect();
+    if (width !== canvas.width || height !== canvas.height) {
+      canvas.width = width;
+      canvas.height = height;
+      setDimensions({ width, height });
+    }
+    
+    // Get frequency data
+    analyser.getByteFrequencyData(dataArrayRef.current);
+    const bufferLength = analyser.frequencyBinCount;
+    
+    // Draw the bars visualization
+    drawBars(ctx, canvas, dataArrayRef.current, bufferLength);
+    
+    animationRef.current = requestAnimationFrame(draw);
+  };
+  
+  // Start/stop visualization based on play state
+  useEffect(() => {
+    if (isPlaying) {
+      // Resume audio context if it's suspended (browser autoplay policy)
+      if (audioContext?.state === 'suspended') {
+        audioContext.resume().catch(err => console.error("Error resuming audio context:", err));
+      }
+      
+      // Start the animation
+      if (!animationRef.current) {
+        animationRef.current = requestAnimationFrame(draw);
+      }
+    } else {
+      // Stop the animation when not playing
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    };
+  }, [isPlaying, colorScheme, sensitivity, interactive, mousePosition]);
+  
+  return (
+    <div className="w-full">
+      <canvas 
+        ref={canvasRef} 
+        className={`w-full h-full ${!isPlaying ? 'opacity-30' : 'opacity-100'} transition-opacity duration-300`}
+        width={dimensions.width || 300}  
+        height={dimensions.height || 80}
+        onMouseMove={interactive ? handleMouseMove : undefined}
+        onMouseLeave={interactive ? handleMouseLeave : undefined}
+      />
+    </div>
+  );
+};
+
+export default MusicVisualizer;

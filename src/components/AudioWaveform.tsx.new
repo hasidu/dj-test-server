@@ -1,0 +1,149 @@
+"use client";
+
+import { useEffect, useRef, useState } from 'react';
+import WaveSurfer from 'wavesurfer.js';
+
+interface AudioWaveformProps {
+  audioUrl: string;
+  isPlaying: boolean;
+  onPlayPause: () => void;
+  onReady?: (duration: number) => void;
+  onPositionChange?: (position: number) => void;
+  waveColor?: string;
+  progressColor?: string;
+  height?: number;
+  barWidth?: number;
+  barGap?: number;
+  audioElement?: HTMLAudioElement | null;
+}
+
+const AudioWaveform: React.FC<AudioWaveformProps> = ({
+  audioUrl,
+  isPlaying,
+  onPlayPause,
+  onReady,
+  onPositionChange,
+  waveColor = 'rgba(255, 255, 255, 0.3)',
+  progressColor = '#1DB954',
+  height = 40,
+  barWidth = 2,
+  barGap = 1,
+  audioElement
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Initialize WaveSurfer
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Clean up previous instance
+    if (wavesurferRef.current) {
+      wavesurferRef.current.destroy();
+    }
+    
+    const wavesurfer = WaveSurfer.create({
+      container: containerRef.current,
+      waveColor: waveColor,
+      progressColor: progressColor,
+      height: height,
+      barWidth: barWidth,
+      barGap: barGap,
+      barRadius: 2,
+      cursorWidth: 0,
+      normalize: true,
+      // @ts-ignore
+      responsive: true,
+      fillParent: true,
+    });
+
+    wavesurferRef.current = wavesurfer;
+
+    // Load audio file - for visualization only
+    wavesurfer.load(audioUrl);
+
+    // Disable internal audio playback - CRITICAL FIX
+    // @ts-ignore - Access the internal media element to mute it completely
+    if (wavesurfer.backend && wavesurfer.backend.media) {
+      // @ts-ignore
+      wavesurfer.backend.media.muted = true;
+      // @ts-ignore
+      wavesurfer.backend.media.volume = 0;
+    }
+    
+    // Event handlers
+    wavesurfer.on('ready', () => {
+      setLoading(false);
+      if (onReady) {
+        onReady(wavesurfer.getDuration());
+      }
+    });
+
+    // Handle seek events from user interaction with waveform
+    // @ts-ignore
+    wavesurfer.on('seek', () => {
+      if (onPositionChange) {
+        onPositionChange(wavesurfer.getCurrentTime());
+      }
+      
+      // Important: If the user clicks on the waveform, update the global audio position
+      if (audioElement) {
+        audioElement.currentTime = wavesurfer.getCurrentTime();
+      }
+      
+      // Call onPlayPause to ensure play state is consistent
+      onPlayPause();
+    });
+    
+    // Cleanup
+    return () => {
+      if (wavesurferRef.current) {
+        wavesurferRef.current.destroy();
+      }
+    };
+  }, [audioUrl]);
+
+  // Update waveform position based on external audio element's position
+  useEffect(() => {
+    if (!audioElement || !wavesurferRef.current) return;
+    
+    const updatePosition = () => {
+      // Only update if the difference is significant to avoid constant updates
+      const currentWaveTime = wavesurferRef.current?.getCurrentTime() || 0;
+      if (Math.abs(audioElement.currentTime - currentWaveTime) > 0.5) {
+        wavesurferRef.current?.seekTo(audioElement.currentTime / (audioElement.duration || 1));
+      }
+    };
+    
+    // Listen to timeupdate event from the global audio element
+    audioElement.addEventListener('timeupdate', updatePosition);
+    
+    return () => {
+      audioElement.removeEventListener('timeupdate', updatePosition);
+    };
+  }, [audioElement]);
+
+  // Control playback state based on isPlaying prop
+  useEffect(() => {
+    if (wavesurferRef.current) {
+      // This only controls the visual state, not actual audio playback
+      if (isPlaying) {
+        wavesurferRef.current.play();
+      } else {
+        wavesurferRef.current.pause();
+      }
+    }
+  }, [isPlaying]);
+
+  return (
+    <div className="w-full">
+      <div
+        ref={containerRef}
+        className={`w-full ${loading ? 'opacity-50' : 'opacity-100'}`}
+      />
+    </div>
+  );
+};
+
+export default AudioWaveform;

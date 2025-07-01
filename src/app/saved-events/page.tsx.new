@@ -1,0 +1,119 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import events from '@/data/events';
+import { useSavedEvents } from '@/context/SavedEventsContext';
+import { isUpcomingEvent, isEventToday, isPastEvent } from '@/utils/dateUtils';
+
+export default function SavedEventsPage() {
+  const { savedEventIds, isLoaded } = useSavedEvents();
+  const [savedEvents, setSavedEvents] = useState<typeof events>([]);
+  
+  // Load saved events when component mounts and savedEventIds change
+  useEffect(() => {
+    if (isLoaded) {
+      const saved = events.filter(event => savedEventIds.includes(event.id));
+      setSavedEvents(saved);
+    }
+  }, [savedEventIds, isLoaded]);
+
+  // If not loaded yet, show loading state
+  if (!isLoaded) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl md:text-4xl font-bold mb-8">My Saved Events</h1>
+        <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-32 rounded-lg mb-8"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-gray-200 dark:bg-gray-700 h-64 rounded-lg"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gray-100 dark:bg-gray-900 min-h-screen">
+      <div className="container mx-auto px-4 py-12">
+        <h1 className="text-3xl md:text-4xl font-bold mb-8">My Saved Events</h1>
+        
+        {savedEvents.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {savedEvents.map(event => (
+              <div key={event.id} className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <Link href={`/events/${event.id}`} className="block">
+                  <div className="relative h-48 w-full">
+                    <Image 
+                      src={event.image} 
+                      alt={event.title} 
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </Link>
+                <div className="p-5">
+                  <Link href={`/events/${event.id}`} className="block">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{event.title}</h3>
+                  </Link>
+                  
+                  <div className="mb-4 flex items-center text-gray-500 dark:text-gray-400">
+                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{event.date} · {event.time}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    {event.tickets ? (
+                      <span className="font-bold text-green-600 dark:text-green-400">
+                        {event.tickets.price}
+                      </span>
+                    ) : (
+                      <span className="text-gray-500 dark:text-gray-400">Price TBA</span>
+                    )}
+                    
+                    <Link 
+                      href={`/events/${event.id}`}
+                      className="text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center max-w-2xl mx-auto">
+            <svg 
+              className="w-16 h-16 mx-auto text-gray-400" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No saved events</h3>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
+              Browse our events and click the bookmark icon to save your favorites.
+            </p>
+            <Link 
+              href="/events" 
+              className="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              Browse Events
+            </Link>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
