@@ -3,8 +3,8 @@
 
 import { NextResponse } from 'next/server';
 
-// This would be stored in an environment variable in a real app
-const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID || 'YOUR_SOUNDCLOUD_CLIENT_ID';
+// Note: SoundCloud client ID would be used for API integration
+// const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID || 'YOUR_SOUNDCLOUD_CLIENT_ID';
 
 export async function GET(request: Request) {
   try {

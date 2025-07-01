@@ -25,10 +25,9 @@ export default function AboutPage() {
                 La Foresta was born in 2020 from a shared passion for underground electronic music and a desire to create 
                 exceptional experiences that bring people together. What started as small gatherings among friends has grown 
                 into one of the most respected event companies in the industry.
-              </p>
-              <p className="text-gray-300 mb-4">
+              </p>              <p className="text-gray-300 mb-4">
                 We believe that music has the power to connect people across boundaries and create lasting memories. 
-                Our events are designed to be more than just concerts – they're immersive experiences that engage all the senses.
+                Our events are designed to be more than just concerts – they&apos;re immersive experiences that engage all the senses.
               </p>
               <p className="text-gray-300">
                 From intimate club nights to sprawling outdoor festivals, each La Foresta event is crafted with careful attention 
