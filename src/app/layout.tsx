@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import Navbar from "@/components/NavbarNew";
 import Footer from "@/components/FooterNew";
 import { SavedEventsProvider } from "@/context/SavedEventsContext";
 import { GlobalAudioProvider } from "@/context/GlobalAudioContext";
+import { NavigationProvider } from "@/context/NavigationContext";
+import { ImageViewerProvider } from "@/context/ImageViewerContext";
+import NavbarNew from "@/components/NavbarNew";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,15 +34,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SavedEventsProvider>
-            <GlobalAudioProvider>
-              <Navbar />
-              <main className="page-wrapper min-h-screen bg-background text-foreground transition-colors duration-500">
-                {children}
-              </main>
-              <Footer />
-            </GlobalAudioProvider>
-          </SavedEventsProvider>
+          <NavigationProvider>
+            <SavedEventsProvider>
+              <GlobalAudioProvider>
+                <ImageViewerProvider>
+                  <NavbarNew />
+                  <main className="page-wrapper min-h-screen bg-background text-foreground transition-colors duration-500">
+                    {children}
+                  </main>
+                  <Footer />
+                </ImageViewerProvider>
+              </GlobalAudioProvider>
+            </SavedEventsProvider>
+          </NavigationProvider>
         </ThemeProvider>
       </body>
     </html>

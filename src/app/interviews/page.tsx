@@ -1,11 +1,9 @@
+"use client";
+
 import Image from 'next/image';
 import Link from 'next/link';
-import PageHeader from '@/components/PageHeader';
-
-export const metadata = {
-  title: 'Interviews | La Foresta Events',
-  description: 'Exclusive interviews with top DJs and artists from around the world',
-};
+import { motion } from 'framer-motion';
+import AnimatedGridBackground from '@/components/AnimatedGridBackground';
 
 export default function InterviewsPage() {
   const interviewsList = [
@@ -15,7 +13,10 @@ export default function InterviewsPage() {
       location: 'USA',
       image: '/images/team-member1.jpg',
       date: 'June 12, 2025',
-      excerpt: 'Aaron shares his journey from small-town clubs to international stages, and his unique approach to blending house and techno.'
+      excerpt: 'Aaron shares his journey from small-town clubs to international stages, and his unique approach to blending house and techno.',
+      duration: '45 min',
+      genre: 'House/Techno',
+      highlights: ['First international gig', 'Creative process', 'Future projects']
     },
     {
       id: 'dj-ruby',
@@ -23,159 +24,213 @@ export default function InterviewsPage() {
       location: 'Malta',
       image: '/images/team-member2.jpg',
       date: 'June 5, 2025',
-      excerpt: 'Ruby discusses her technical approach to DJing and how her sound has evolved throughout her career in the Mediterranean scene.'
+      excerpt: 'Ruby discusses her technical approach to DJing and how her sound has evolved throughout her career in the Mediterranean scene.',
+      duration: '38 min',
+      genre: 'Progressive House',
+      highlights: ['Technical skills', 'Mediterranean influence', 'Production tips']
+    },
+    {
+      id: 'marco-silva',
+      name: 'MARCO SILVA',
+      location: 'Portugal',
+      image: '/images/team-member3.jpg',
+      date: 'May 28, 2025',
+      excerpt: 'Marco opens up about his transition from classical music to electronic, and his philosophy on creating emotional connections through sound.',
+      duration: '52 min',
+      genre: 'Melodic Techno',
+      highlights: ['Classical background', 'Emotional storytelling', 'Live performance']
+    },
+    {
+      id: 'nina-kross',
+      name: 'NINA KROSS',
+      location: 'Germany',
+      image: '/images/team-member4.jpg',
+      date: 'May 15, 2025',
+      excerpt: 'Nina discusses the Berlin underground scene, her label management experience, and breaking barriers as a female artist.',
+      duration: '41 min',
+      genre: 'Industrial Techno',
+      highlights: ['Berlin scene', 'Label management', 'Female empowerment']
     }
-  ];  return (
-    <main className="bg-black min-h-screen pt-0">      <PageHeader 
-        title="INTERVIEWS" 
-        description="Exclusive conversations with the artists and minds behind the music. Get to know the creative forces shaping our events."
-      />
-      
-      {/* Hero Section with Background - matching the reference image */}
-      <div className="relative w-full h-screen bg-black">
-        <div className="absolute inset-0 z-0 opacity-60">
-          <Image 
-            src="/images/event3.jpg" 
-            alt="Interview Background" 
-            fill 
-            className="object-cover" 
-            priority
-          />
-        </div>
+  ];
+
+  return (
+    <main className="min-h-screen bg-black text-white">
+      {/* Animated Hero Section */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <AnimatedGridBackground />
         
-        <div className="absolute inset-0 bg-black bg-opacity-80 z-10"></div>
-        
-        <div className="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4">
-            <span className="text-accent-green block">LA FORESTA</span> 
-            <span className="text-white">INTERVIEWS</span>
-          </h1>
-          
-          <div className="max-w-3xl mx-auto mt-8 mb-12">
-            <p className="text-white text-lg mb-2">Behind the beats: Exclusive interviews with top DJs.</p>
-            <p className="text-gray-400">
-              LA FORESTA brings you up close and personal with the masters of the turntables. 
-              Check out our interview page for insights and inspirations from the biggest names in the music industry.
+        <div className="relative z-10 text-center px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h1 className="text-6xl md:text-8xl font-bold mb-6">
+              <span className="text-white">INTERVIEWS</span>
+            </h1>
+            <div className="w-24 h-1 bg-white mx-auto mb-8"></div>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-4">
+              Behind the beats: Exclusive conversations with top DJs
             </p>
-          </div>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              LA FORESTA brings you up close and personal with the masters of the turntables. 
+              Get insights and inspirations from the biggest names in the music industry.
+            </p>
+          </motion.div>
         </div>
       </div>
-        {/* Interviews Section - Matching the reference image */}
-      <section className="py-20 bg-black">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-            {interviewsList.map((interview) => (
-              <div key={interview.id} className="flex flex-col items-center text-center">
-                <div className="relative w-64 h-64 mb-8 rounded-full overflow-hidden border-4 border-accent-green glow">
-                  <Image
-                    src={interview.image}
-                    alt={interview.name}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+
+      {/* Interviews Grid Section */}
+      <section className="py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/10 to-transparent"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl font-bold mb-8">
+              <span className="text-white">Featured</span>
+              <span className="text-gray-500 ml-2">Conversations</span>
+            </h2>
+            <div className="w-24 h-1 bg-white mx-auto mb-8"></div>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-7xl mx-auto">
+            {interviewsList.map((interview, index) => (
+              <motion.div
+                key={interview.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="group relative"
+              >
+                <div className="relative bg-gray-900/20 backdrop-blur-sm border border-gray-800 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-500">
+                  {/* Image Section */}
+                  <div className="relative h-80 overflow-hidden">
+                    <Image
+                      src={interview.image}
+                      alt={interview.name}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                    
+                    {/* Duration Badge */}
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-black/60 backdrop-blur-sm rounded-full text-sm text-white">
+                        {interview.duration}
+                      </span>
+                    </div>
+                    
+                    {/* Genre Badge */}
+                    <div className="absolute top-4 right-4">
+                      <span className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-sm text-white border border-white/20">
+                        {interview.genre}
+                      </span>
+                    </div>
+                    
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30"
+                      >
+                        <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </motion.div>
+                    </div>
+                  </div>
+                  
+                  {/* Content Section */}
+                  <div className="p-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-2xl font-bold text-white">{interview.name}</h3>
+                      <span className="text-gray-400 text-sm">{interview.location}</span>
+                    </div>
+                    
+                    <p className="text-gray-400 text-sm mb-4">{interview.date}</p>
+                    <p className="text-gray-300 leading-relaxed mb-6">{interview.excerpt}</p>
+                    
+                    {/* Highlights */}
+                    <div className="mb-6">
+                      <h4 className="text-white font-semibold mb-3">Key Topics:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {interview.highlights.map((highlight, idx) => (
+                          <span 
+                            key={idx}
+                            className="px-3 py-1 bg-gray-800/50 rounded-full text-sm text-gray-300 border border-gray-700"
+                          >
+                            {highlight}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex space-x-4">
+                      <Link 
+                        href={`/interviews/${interview.id}`}
+                        className="flex-1 text-center py-3 px-6 bg-white text-black font-semibold rounded-xl hover:bg-gray-200 transition-colors duration-300"
+                      >
+                        READ FULL INTERVIEW
+                      </Link>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="p-3 border border-gray-600 rounded-xl hover:border-white transition-colors duration-300"
+                      >
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      </motion.button>
+                    </div>
+                  </div>
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-2">{interview.name}</h2>
-                <p className="text-accent-green mb-4">{interview.location}</p>
-                <p className="text-gray-300 mb-6 max-w-md">{interview.excerpt}</p>
-                <Link 
-                  href={`/interviews/${interview.id}`} 
-                  className="mt-4 inline-block text-accent-green border border-accent-green px-4 py-2 hover:bg-accent-green hover:text-black transition duration-300 uppercase text-sm tracking-wider"
-                >
-                  VIEW MORE
-                </Link>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
-      </section>      {/* Newsletter/Contact Section - Matching reference image */}
-      <section className="py-16 bg-[#0a0a0a] relative overflow-hidden">
-        <div className="absolute right-0 bottom-0 w-1/3 h-full z-0">
-          <Image 
-            src="/images/about-image2.jpg" 
-            alt="Leafy Background" 
-            fill 
-            className="object-cover object-left"
-          />
-          <div className="absolute inset-0 bg-black/50"></div>
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-xl">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              We welcome all interested souls<br />
-              <span className="text-accent-green">to get in touch with us.</span>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="py-20 bg-gray-900/10">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <h2 className="text-4xl font-bold text-white mb-6">
+              Never Miss An Interview
             </h2>
-            
-            <div className="mt-6">
-              <Link 
-                href="/contact" 
-                className="inline-block border border-accent-green text-accent-green px-8 py-3 uppercase tracking-wider text-sm hover:bg-accent-green hover:text-black transition duration-300"
+            <p className="text-xl text-gray-300 mb-8">
+              Get notified when we publish new exclusive conversations with your favorite artists.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <input 
+                type="email" 
+                placeholder="Your email address" 
+                className="flex-1 px-6 py-4 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:border-white focus:outline-none"
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-gray-200 transition-colors duration-300"
               >
-                Contact
-              </Link>
+                Subscribe
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
-        {/* Footer - Matching reference image */}
-      <footer className="py-8 bg-black border-t border-gray-800">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
-              <Link href="mailto:laforesta.official@gmail.com" className="text-gray-400 text-sm flex items-center hover:text-accent-green transition-colors">
-                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                </svg>
-                laforesta.official@gmail.com
-              </Link>
-            </div>
-            
-            <div className="flex flex-wrap justify-center space-x-4 mb-4 md:mb-0">
-              <Link href="/" className="text-gray-500 hover:text-accent-green transition-colors text-xs uppercase">Home</Link>
-              <Link href="/events" className="text-gray-500 hover:text-accent-green transition-colors text-xs uppercase">Events</Link>
-              <Link href="/about" className="text-gray-500 hover:text-accent-green transition-colors text-xs uppercase">About</Link>
-              <Link href="/interviews" className="text-gray-500 hover:text-accent-green transition-colors text-xs uppercase">Interviews</Link>
-              <Link href="/videos" className="text-gray-500 hover:text-accent-green transition-colors text-xs uppercase">Videos</Link>
-              <Link href="/recordings" className="text-gray-500 hover:text-accent-green transition-colors text-xs uppercase">Recordings</Link>
-            </div>
-            
-            <div>
-              <Image 
-                src="/images/logo.png" 
-                alt="La Foresta Logo" 
-                width={60} 
-                height={60}
-                className="h-auto" 
-              />
-            </div>
-          </div>
-          
-          <div className="flex justify-center mt-8 space-x-4">
-            <Link href="https://facebook.com" target="_blank" rel="noopener" className="text-gray-500 hover:text-accent-green transition-colors">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-            </Link>
-            <Link href="https://twitter.com" target="_blank" rel="noopener" className="text-gray-500 hover:text-accent-green transition-colors">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23.954 4.569a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723 9.99 9.99 0 01-3.157 1.2A4.92 4.92 0 0016.327 2a4.935 4.935 0 00-4.93 4.93c0 .39.033.765.114 1.124A13.98 13.98 0 011.64 3.16a4.822 4.822 0 00-.665 2.473c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.937 4.937 0 004.604 3.417 9.868 9.868 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.054 0 13.999-7.496 13.999-13.986 0-.209 0-.42-.015-.63a9.936 9.936 0 002.46-2.548l-.047-.02z" />
-              </svg>
-            </Link>
-            <Link href="https://youtube.com" target="_blank" rel="noopener" className="text-gray-500 hover:text-accent-green transition-colors">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-              </svg>
-            </Link>
-          </div>
-          
-          <div className="text-center mt-8 text-gray-600 text-xs">
-            <p>© LA FORESTA {new Date().getFullYear()}</p>
-            <p className="mt-1">DESIGN BY <span className="text-gray-500">PIXEL DESIGNS</span> DEVELOPED BY <span className="text-gray-500">IMFL</span></p>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }

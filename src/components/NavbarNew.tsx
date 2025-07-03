@@ -88,6 +88,8 @@ export default function Navbar() {
 
   return (
     <motion.nav
+      id="main-navbar"
+      data-navbar="true"
       className={`fixed w-full z-50 transition-all duration-500 ${
         scrolled ? "bg-black/80 backdrop-blur-lg border-b border-[#ffffff10]" : "bg-transparent"
       }`}

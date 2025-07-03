@@ -39,9 +39,9 @@ function EventCard({ event }: EventCardProps) {
   const month = eventDate ? eventDate.toLocaleString('en-US', { month: 'short' }) : "";
   
   return (
-    <div className="event-card modern-card relative overflow-hidden group transform transition-all duration-500 hover:scale-[1.02]">
+    <div className="event-card modern-card relative overflow-hidden group transform transition-all duration-500 hover:scale-[1.02] max-w-sm mx-auto">
       <Link href={`/events/${event.id}`}>
-        <div className="relative aspect-[4/5] overflow-hidden">
+        <div className="relative aspect-[3/4] overflow-hidden">
           <Image 
             src={event.image} 
             alt={event.title} 
@@ -78,10 +78,10 @@ function EventCard({ event }: EventCardProps) {
           {/* Date badge */}
           {eventDate && !event.featured && (
             <div className="absolute top-4 left-4 flex flex-col items-center shadow-lg">
-              <div className="bg-accent-green text-black px-3 py-1 text-xs font-bold">
+              <div className="bg-white text-black px-3 py-1 text-xs font-bold">
                 {month.toUpperCase()}
               </div>
-              <div className="bg-white text-black px-3 py-1 text-xl font-bold">
+              <div className="bg-gray-200 text-black px-3 py-1 text-xl font-bold">
                 {day}
               </div>
             </div>
@@ -89,17 +89,17 @@ function EventCard({ event }: EventCardProps) {
           
           {/* Featured badge */}
           {event.featured && (
-            <div className="absolute top-4 left-4 bg-accent-green text-black text-xs px-3 py-1.5 font-bold uppercase tracking-wider shadow-lg glow">
+            <div className="absolute top-4 left-4 bg-white text-black text-xs px-3 py-1.5 font-bold uppercase tracking-wider shadow-lg">
               Featured
             </div>
           )}
           
           {/* Event info */}
           <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-            <h3 className="text-white text-xl font-bold mb-2 group-hover:text-accent-green transition-colors duration-300">{event.title}</h3>
+            <h3 className="text-white text-xl font-bold mb-2 group-hover:text-gray-300 transition-colors duration-300">{event.title}</h3>
             
             <div className="flex items-center text-gray-300 mb-2">
-              <svg className="w-4 h-4 mr-2 text-accent-green opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-4 h-4 mr-2 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -107,7 +107,7 @@ function EventCard({ event }: EventCardProps) {
             </div>
             
             <div className="flex items-center text-gray-300 mb-4">
-              <svg className="w-4 h-4 mr-2 text-accent-green opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-4 h-4 mr-2 text-white opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>{event.time}</span>
@@ -119,13 +119,13 @@ function EventCard({ event }: EventCardProps) {
                 {event.categories.slice(0, 2).map((category, index) => (
                   <span 
                     key={index} 
-                    className="bg-black/60 text-gray-200 text-xs px-2 py-1 backdrop-blur-lg border border-gray-800"
+                    className="bg-white/10 text-gray-200 text-xs px-2 py-1 backdrop-blur-lg border border-gray-600 rounded"
                   >
                     {category}
                   </span>
                 ))}
                 {event.categories.length > 2 && (
-                  <span className="bg-black/60 text-gray-200 text-xs px-2 py-1 backdrop-blur-lg border border-gray-800">
+                  <span className="bg-white/10 text-gray-200 text-xs px-2 py-1 backdrop-blur-lg border border-gray-600 rounded">
                     +{event.categories.length - 2}
                   </span>
                 )}
@@ -134,14 +134,14 @@ function EventCard({ event }: EventCardProps) {
             
             <div className="flex justify-between items-center mt-2">
               {event.tickets ? (
-                <span className="font-bold text-accent-green text-lg">
+                <span className="font-bold text-white text-lg">
                   {formatPrice(event.tickets.price)}
                 </span>
               ) : (
                 <span className="text-gray-400">Price TBA</span>
               )}
               
-              <span className="glass-card-light text-xs text-white px-3 py-1.5 uppercase tracking-wider group-hover:bg-accent-green/20 transition-colors duration-300">
+              <span className="bg-white/10 text-xs text-white px-3 py-1.5 uppercase tracking-wider group-hover:bg-white/20 transition-colors duration-300 border border-gray-600 rounded">
                 View Details
               </span>
             </div>
